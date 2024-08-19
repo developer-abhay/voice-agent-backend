@@ -6,11 +6,12 @@ import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 dotenv.config();
 
+// SignUp Handler
 export const signup = async (req: Request, res: Response) => {
   const user: User = req.body;
 
   if (!user.email || !user.password || !user.name) {
-    return res.json({ message: "Enter Valid inputs" });
+    return res.status(400).json({ message: "Enter Valid inputs" });
   }
 
   const scanParams = {
@@ -25,7 +26,7 @@ export const signup = async (req: Request, res: Response) => {
     const response = await dynamoClient.scan(scanParams).promise();
 
     if (response.Count && response.Count > 0) {
-      return res.json({ error: "user already exists" });
+      return res.status(409).json({ error: "user already exists" });
     }
 
     user.id = uuidv4();
@@ -40,20 +41,23 @@ export const signup = async (req: Request, res: Response) => {
 
     const token = jwt.sign(
       { userId: user.id },
-      process.env.JWT_SECRET as string
+      process.env.JWT_SECRET as string,
+      { expiresIn: 3600 }
     );
 
-    res.json({ token });
+    res.status(200).json({ token });
   } catch (error) {
+    console.error("Error during signup: ", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
+// SignIn Handler
 export const signin = async (req: Request, res: Response) => {
   const user: User = req.body;
 
   if (!user.email || !user.password) {
-    return res.json({ message: "Enter Valid inputs" });
+    return res.status(400).json({ message: "Enter Valid inputs" });
   }
 
   const params = {
@@ -70,13 +74,15 @@ export const signin = async (req: Request, res: Response) => {
 
     if (response.Items && response.Items?.length == 1) {
       const userId = response.Items[0].id;
-      const token = jwt.sign({ userId }, process.env.JWT_SECRET as string);
+      const token = jwt.sign({ userId }, process.env.JWT_SECRET as string, {
+        expiresIn: 3600,
+      });
 
-      res.json({ token });
+      return res.status(200).json({ token });
     } else {
-      res.json({ message: "User doesn't exist" });
+      return res.status(404).json({ message: "User doesn't exist" });
     }
   } catch (error) {
-    res.status(500).json({ error: "Internal Server Error" });
+    return res.status(500).json({ error: "Internal Server Error" });
   }
 };
