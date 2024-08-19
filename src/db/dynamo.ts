@@ -11,4 +11,6 @@ AWS.config.update({
 
 const dynamoClient = new AWS.DynamoDB.DocumentClient();
 
-export { dynamoClient };
+const Table_Name: string = "voiceAgentUserTable";
+
+export { dynamoClient, Table_Name };

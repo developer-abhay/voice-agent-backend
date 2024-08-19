@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { User } from "../types/types";
-import { dynamoClient } from "../db/dynamo";
+import { dynamoClient, Table_Name } from "../db/dynamo";
 import { v4 as uuidv4 } from "uuid";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
@@ -9,7 +9,9 @@ dotenv.config();
 export const signup = async (req: Request, res: Response) => {
   const user: User = req.body;
 
-  const Table_Name: string = "voiceAgentUserTable";
+  if (!user.email || !user.password || !user.name) {
+    return res.json({ message: "Enter Valid inputs" });
+  }
 
   const scanParams = {
     TableName: Table_Name,
@@ -27,7 +29,7 @@ export const signup = async (req: Request, res: Response) => {
     }
 
     user.id = uuidv4();
-    user.createdAt = new Date();
+    user.createdAt = new Date().toISOString();
 
     const params = {
       TableName: Table_Name,
@@ -47,6 +49,34 @@ export const signup = async (req: Request, res: Response) => {
   }
 };
 
-export const signin = (req: Request, res: Response) => {
-  res.json({ message: "Sign In Route" });
+export const signin = async (req: Request, res: Response) => {
+  const user: User = req.body;
+
+  if (!user.email || !user.password) {
+    return res.json({ message: "Enter Valid inputs" });
+  }
+
+  const params = {
+    TableName: Table_Name,
+    FilterExpression: "email = :email and password = :password",
+    ExpressionAttributeValues: {
+      ":email": user.email,
+      ":password": user.password,
+    },
+  };
+
+  try {
+    const response = await dynamoClient.scan(params).promise();
+
+    if (response.Items && response.Items?.length == 1) {
+      const userId = response.Items[0].id;
+      const token = jwt.sign({ userId }, process.env.JWT_SECRET as string);
+
+      res.json({ token });
+    } else {
+      res.json({ message: "User doesn't exist" });
+    }
+  } catch (error) {
+    res.status(500).json({ error: "Internal Server Error" });
+  }
 };
