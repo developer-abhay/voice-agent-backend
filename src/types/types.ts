@@ -1,7 +1,9 @@
 export type User = {
-  id: string;
+  _id: string;
+  clientId: string;
   name: string;
   email: string;
   password: string;
   createdAt: string;
+  updatedAt: string;
 };
