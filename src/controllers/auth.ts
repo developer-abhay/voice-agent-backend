@@ -11,7 +11,8 @@ export const signup = async (req: Request, res: Response) => {
   const user: User = req.body;
 
   if (!user.email || !user.password || !user.name) {
-    return res.status(400).json({ message: "Enter Valid inputs" });
+    res.status(400).json({ message: "Enter Valid inputs" });
+    return;
   }
 
   const scanParams = {
@@ -26,7 +27,8 @@ export const signup = async (req: Request, res: Response) => {
     const response = await dynamoClient.scan(scanParams).promise();
 
     if (response.Count && response.Count > 0) {
-      return res.status(409).json({ error: "user already exists" });
+      res.status(409).json({ error: "user already exists" });
+      return;
     }
 
     user.id = uuidv4();
@@ -42,7 +44,7 @@ export const signup = async (req: Request, res: Response) => {
     const token = jwt.sign(
       { userId: user.id },
       process.env.JWT_SECRET as string,
-      { expiresIn: 3600 }
+      { expiresIn: 3600 },
     );
 
     res.status(200).json({ token });
@@ -57,7 +59,8 @@ export const signin = async (req: Request, res: Response) => {
   const user: User = req.body;
 
   if (!user.email || !user.password) {
-    return res.status(400).json({ message: "Enter Valid inputs" });
+    res.status(400).json({ message: "Enter Valid inputs" });
+    return;
   }
 
   const params = {
@@ -78,11 +81,15 @@ export const signin = async (req: Request, res: Response) => {
         expiresIn: 3600,
       });
 
-      return res.status(200).json({ token });
+      res.status(200).json({ token });
+      return;
     } else {
-      return res.status(404).json({ message: "User doesn't exist" });
+      res.status(404).json({ message: "User doesn't exist" });
+      return;
     }
   } catch (error) {
-    return res.status(500).json({ error: "Internal Server Error" });
+    console.log(error);
+    res.status(500).json({ error: "Internal Server Error" });
+    return;
   }
 };
