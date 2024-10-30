@@ -5,6 +5,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc -b",
+    "lint:check": "eslint . --ext .ts,.js",
     "dev": "tsc -b & node dist/index.js",
     "deploy": "npm install && tsc -b"
   },
