@@ -44,7 +44,7 @@ export const signup = async (req: Request, res: Response) => {
     const token = jwt.sign(
       { userId: user.id },
       process.env.JWT_SECRET as string,
-      { expiresIn: 3600 }
+      { expiresIn: 3600 },
     );
 
     res.status(200).json({ token });
@@ -88,7 +88,8 @@ export const signin = async (req: Request, res: Response) => {
       return;
     }
   } catch (error) {
+    console.log(error);
     res.status(500).json({ error: "Internal Server Error" });
-    return
+    return;
   }
 };
