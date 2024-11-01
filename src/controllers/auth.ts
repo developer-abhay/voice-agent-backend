@@ -1,95 +1,101 @@
 import { Request, Response } from "express";
 import { User } from "../types/types";
-import { dynamoClient, Table_Name } from "../db/dynamo";
+import { createUser, findUserByEmail } from "../db/dynamo";
 import { v4 as uuidv4 } from "uuid";
-import jwt from "jsonwebtoken";
+import bcrypt from "bcrypt";
 import dotenv from "dotenv";
+import { validateUserInput } from "../utils/validation";
+import { generateToken } from "../utils/authUtils";
 dotenv.config();
 
 // SignUp Handler
 export const signup = async (req: Request, res: Response) => {
-  const user: User = req.body;
-
-  if (!user.email || !user.password || !user.name) {
-    res.status(400).json({ message: "Enter Valid inputs" });
-    return;
-  }
-
-  const scanParams = {
-    TableName: Table_Name,
-    FilterExpression: "email = :email",
-    ExpressionAttributeValues: {
-      ":email": user.email,
-    },
-  };
+  const { email, password, name, clientId } = req.body;
 
   try {
-    const response = await dynamoClient.scan(scanParams).promise();
+    // Validate User inputs
+    validateUserInput("signup", { email, password, name, clientId });
 
-    if (response.Count && response.Count > 0) {
-      res.status(409).json({ error: "user already exists" });
+    // Check if user with email already exists
+    const existingUser = await findUserByEmail(email);
+
+    if (existingUser) {
+      res.status(409).json({ error: "User Already Exists" });
       return;
     }
 
-    user.id = uuidv4();
-    user.createdAt = new Date().toISOString();
+    //  Create a new user
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    const params = {
-      TableName: Table_Name,
-      Item: user,
+    const user: User = {
+      _id: uuidv4(),
+      clientId,
+      name,
+      email,
+      password: hashedPassword,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     };
 
-    await dynamoClient.put(params).promise();
+    await createUser(user);
 
-    const token = jwt.sign(
-      { userId: user.id },
-      process.env.JWT_SECRET as string,
-      { expiresIn: 3600 },
-    );
-
-    res.status(200).json({ token });
-  } catch (error) {
-    console.error("Error during signup: ", error);
-    res.status(500).json({ error: "Internal Server Error" });
+    res.status(200).json({ message: "User registered Successfully" });
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      console.error("Error during signup: ", err.message);
+      res.status(500).json({ error: err.message });
+    } else {
+      console.error("Unexpected error during signup: ", err);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
   }
 };
 
 // SignIn Handler
 export const signin = async (req: Request, res: Response) => {
-  const user: User = req.body;
-
-  if (!user.email || !user.password) {
-    res.status(400).json({ message: "Enter Valid inputs" });
-    return;
-  }
-
-  const params = {
-    TableName: Table_Name,
-    FilterExpression: "email = :email and password = :password",
-    ExpressionAttributeValues: {
-      ":email": user.email,
-      ":password": user.password,
-    },
-  };
+  const { email, password } = req.body;
 
   try {
-    const response = await dynamoClient.scan(params).promise();
+    // Validate User inputs
+    validateUserInput("signin", { email, password });
 
-    if (response.Items && response.Items?.length == 1) {
-      const userId = response.Items[0].id;
-      const token = jwt.sign({ userId }, process.env.JWT_SECRET as string, {
-        expiresIn: 3600,
-      });
+    // Find user by email
+    const existingUser = await findUserByEmail(email);
 
-      res.status(200).json({ token });
-      return;
-    } else {
+    if (!existingUser) {
       res.status(404).json({ message: "User doesn't exist" });
       return;
     }
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ error: "Internal Server Error" });
-    return;
+
+    // Compare passwords
+    const isPasswordValid = await bcrypt.compare(
+      password,
+      existingUser.password,
+    );
+
+    if (!isPasswordValid) {
+      res.status(401).json({ message: "Invalid credentials" });
+      return;
+    }
+
+    // Generate JWT token and set in cookies
+    const token = generateToken(existingUser._id);
+
+    res.cookie("access-token", token, {
+      httpOnly: true,
+      // secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 3600000, // 1 hour
+    });
+
+    res.status(200).json({ message: "Sign in successful" });
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      console.error("Error during signup: ", err.message);
+      res.status(500).json({ error: err.message });
+    } else {
+      console.error("Unexpected error during signup: ", err);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
   }
 };
