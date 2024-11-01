@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 
-export const errorHandler = (err: unknown, req: Request, res: Response, _next: NextFunction
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export const errorHandler = (err: unknown, req: Request, res: Response, next: NextFunction
 ) => {
   if (err instanceof Error) {
     console.error(err.stack);
