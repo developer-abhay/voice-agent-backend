@@ -1,6 +1,7 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 
-export const errorHandler = (err: unknown, req: Request, res: Response) => {
+export const errorHandler = (err: unknown, req: Request, res: Response, _next: NextFunction
+) => {
   if (err instanceof Error) {
     console.error(err.stack);
     res.status(500).json({
