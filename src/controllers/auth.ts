@@ -1,35 +1,34 @@
 import { Request, Response } from "express";
-import { User } from "../types/types";
-import { createUser, findUserByEmail } from "../db/dynamo";
+import { Client } from "../types/Types";
+import { createClient, findClientByEmail } from "../db/Dynamo";
 import { v4 as uuidv4 } from "uuid";
 import bcrypt from "bcrypt";
 import dotenv from "dotenv";
-import { validateUserInput } from "../utils/validation";
-import { generateToken } from "../utils/authUtils";
+import { validateClientInput } from "../utils/Validation";
+import { generateToken } from "../utils/AuthUtils";
 dotenv.config();
 
 // SignUp Handler
 export const signup = async (req: Request, res: Response) => {
-  const { email, password, name, clientId } = req.body;
+  const { email, password, name } = req.body;
 
   try {
-    // Validate User inputs
-    validateUserInput("signup", { email, password, name, clientId });
+    // Validate client inputs
+    validateClientInput("signup", { email, password, name });
 
-    // Check if user with email already exists
-    const existingUser = await findUserByEmail(email);
+    // Check if client with email already exists
+    const existingClient = await findClientByEmail(email);
 
-    if (existingUser) {
-      res.status(409).json({ error: "User Already Exists" });
+    if (existingClient) {
+      res.status(409).json({ error: "Client Already Exists" });
       return;
     }
 
-    //  Create a new user
+    //  Create a new client
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const user: User = {
-      _id: uuidv4(),
-      clientId,
+    const client: Client = {
+      clientId: uuidv4(),
       name,
       email,
       password: hashedPassword,
@@ -37,9 +36,9 @@ export const signup = async (req: Request, res: Response) => {
       updatedAt: new Date().toISOString(),
     };
 
-    await createUser(user);
+    await createClient(client);
 
-    res.status(200).json({ message: "User registered Successfully" });
+    res.status(200).json({ message: "Client registered Successfully" });
   } catch (err: unknown) {
     if (err instanceof Error) {
       console.error("Error during signup: ", err.message);
@@ -56,21 +55,21 @@ export const signin = async (req: Request, res: Response) => {
   const { email, password } = req.body;
 
   try {
-    // Validate User inputs
-    validateUserInput("signin", { email, password });
+    // Validate client inputs
+    validateClientInput("signin", { email, password });
 
-    // Find user by email
-    const existingUser = await findUserByEmail(email);
+    // Find client by email
+    const existingClient = await findClientByEmail(email);
 
-    if (!existingUser) {
-      res.status(404).json({ message: "User doesn't exist" });
+    if (!existingClient) {
+      res.status(404).json({ message: "Client doesn't exist" });
       return;
     }
 
     // Compare passwords
     const isPasswordValid = await bcrypt.compare(
       password,
-      existingUser.password,
+      existingClient.password,
     );
 
     if (!isPasswordValid) {
@@ -79,7 +78,7 @@ export const signin = async (req: Request, res: Response) => {
     }
 
     // Generate JWT token and set in cookies
-    const token = generateToken(existingUser._id);
+    const token = generateToken(existingClient.clientId);
 
     res.cookie("access-token", token, {
       httpOnly: true,

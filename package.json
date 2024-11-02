@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "build": "tsc -b",
     "dev": "tsc -b & node dist/index.js",
+    "build": "tsc -b",
+    "start": "node dist/index.js",
     "deploy": "npm install && tsc -b",
     "lint:check": "eslint .",
     "format:fix": "prettier --write ."
