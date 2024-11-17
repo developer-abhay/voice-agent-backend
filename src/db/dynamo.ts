@@ -13,7 +13,6 @@ AWS.config.update({
 
 const dynamoClient = new AWS.DynamoDB.DocumentClient();
 
-
 // Find a client by email
 const findClientByEmail = async (email: string): Promise<Client | null> => {
   const params = {
