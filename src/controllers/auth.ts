@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { Client } from "../types/Types";
+import { Client, CustomRequest } from "../types/Types";
 import { createClient, findClientByEmail } from "../db/Dynamo";
 import { v4 as uuidv4 } from "uuid";
 import bcrypt from "bcrypt";
@@ -20,7 +20,7 @@ export const signup = async (req: Request, res: Response) => {
     const existingClient = await findClientByEmail(email);
 
     if (existingClient) {
-      res.status(409).json({ error: "Client Already Exists" });
+      res.status(409).json({ message: "User Already Exists" });
       return;
     }
 
@@ -42,10 +42,10 @@ export const signup = async (req: Request, res: Response) => {
   } catch (err: unknown) {
     if (err instanceof Error) {
       console.error("Error during signup: ", err.message);
-      res.status(500).json({ error: err.message });
+      res.status(500).json({ message: err.message });
     } else {
       console.error("Unexpected error during signup: ", err);
-      res.status(500).json({ error: "Internal Server Error" });
+      res.status(500).json({ message: "Internal Server Error" });
     }
   }
 };
@@ -62,7 +62,7 @@ export const signin = async (req: Request, res: Response) => {
     const existingClient = await findClientByEmail(email);
 
     if (!existingClient) {
-      res.status(404).json({ message: "Client doesn't exist" });
+      res.status(404).json({ message: "User doesn't exist. Please register first." });
       return;
     }
 
@@ -78,23 +78,45 @@ export const signin = async (req: Request, res: Response) => {
     }
 
     // Generate JWT token and set in cookies
-    const token = generateToken(existingClient.clientId);
+    const token = generateToken({ name: existingClient.name, email: existingClient.email });
 
-    res.cookie("access-token", token, {
+    res.cookie("token", token, {
       httpOnly: true,
       // secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
-      maxAge: 3600000, // 1 hour
+      maxAge: 60 * 60 * 1000, // 1 hour
     });
 
-    res.status(200).json({ message: "Sign in successful" });
+    res.status(200).json({ message: "Sign in successful", user: { name: existingClient.name, email: existingClient.email } });
   } catch (err: unknown) {
     if (err instanceof Error) {
       console.error("Error during signup: ", err.message);
-      res.status(500).json({ error: err.message });
+      res.status(500).json({ message: err.message });
     } else {
       console.error("Unexpected error during signup: ", err);
-      res.status(500).json({ error: "Internal Server Error" });
+      res.status(500).json({ message: "Internal Server Error" });
     }
   }
 };
+
+// Change password
+export const changePassword = async (req: Request, res: Response) => {
+  //  Method 1 
+  console.log('Verify old password')
+  console.log('Change password')
+
+  // Method 2 
+  console.log('Send otp to verified email')
+  console.log('verify otp')
+  console.log('change password')
+  res.status(200).json({ message: "Password changes successfully" })
+}
+
+// Verified User
+export const verifyUser = async (req: CustomRequest, res: Response) => {
+  const verifiedUser = req.verifiedUser;
+  if (verifiedUser) {
+    res.status(200).json({ valid: true, user: { name: verifiedUser.name, email: verifiedUser.email } })
+  }
+  return;
+}

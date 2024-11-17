@@ -10,12 +10,12 @@ export const errorHandler = (
   if (err instanceof Error) {
     console.error(err.stack);
     res.status(500).json({
-      error: err.message || "Internal Server Error",
+      message: err.message || "Internal Server Error",
     });
   } else {
     console.error("Unexpected error:", err);
     res.status(500).json({
-      error: "Internal Server Error",
+      message: "Internal Server Error",
     });
   }
 };
