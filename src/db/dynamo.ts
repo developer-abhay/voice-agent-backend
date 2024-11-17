@@ -27,8 +27,9 @@ const findClientByEmail = async (email: string): Promise<Client | null> => {
     return response.Count && response.Count! > 0
       ? (response.Items![0] as Client)
       : null;
-  } catch {
-    throw new Error("Error while searching Client in dynamoDB");
+  } catch (error) {
+    console.log(error)
+    throw new Error("Error while searching Client");
   }
 };
 
