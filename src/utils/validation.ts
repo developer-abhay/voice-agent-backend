@@ -1,4 +1,4 @@
-import { Client } from "../types/Types";
+import { Client } from "../types/Types_";
 
 export const validateClientInput = (
   type: "signin" | "signup",

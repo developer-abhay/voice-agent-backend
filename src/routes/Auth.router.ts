@@ -4,7 +4,7 @@ import {
   signin,
   signup,
   verifyUser,
-} from "../controllers/Auth";
+} from "../controllers/Auth_";
 import { verifyCookies } from "../middlewares/Auth";
 
 export const authRouter = express.Router();

@@ -1,6 +1,6 @@
 import AWS from "aws-sdk";
 import dotenv from "dotenv";
-import { Client } from "../types/Types";
+import { Client } from "../types/Types_";
 import { Client_Table_Name } from "../config/Constants";
 
 dotenv.config();

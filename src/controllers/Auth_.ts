@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
-import { createClient, findClientByEmail, findClientById } from "../db/Dynamo";
-import { Client, CustomRequest } from "../types/Types";
+import { createClient, findClientByEmail, findClientById } from "../db/Dynamo_";
+import { Client, CustomRequest } from "../types/Types_";
 import { v4 as uuidv4 } from "uuid";
 import bcrypt from "bcrypt";
 import dotenv from "dotenv";
