@@ -10,5 +10,5 @@ export type Client = {
 };
 
 export interface CustomRequest extends Request {
-  verifiedUser?: { name: string, email: string };
+  verifiedUserId?: string;
 }
