@@ -4,8 +4,8 @@ import { Client, CustomRequest } from "../types/Types_";
 import { v4 as uuidv4 } from "uuid";
 import bcrypt from "bcrypt";
 import dotenv from "dotenv";
-import { generateToken } from "../utils/AuthUtils";
-import { validateClientInput } from "../utils/Validation";
+import { generateToken } from "../utils/AuthUtils_";
+import { validateClientInput } from "../utils/Validation_";
 dotenv.config();
 
 // SignUp Handler
