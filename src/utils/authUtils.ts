@@ -3,10 +3,10 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-export const generateToken = (userId: string): string => {
+export const generateToken = (clientId: string): string => {
   if (!process.env.JWT_SECRET) {
     throw new Error("JWT_SECRET is not defined in environment variables");
   }
 
-  return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: 3600 });
+  return jwt.sign({ clientId }, process.env.JWT_SECRET, { expiresIn: 3600 });
 };

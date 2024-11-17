@@ -1,5 +1,4 @@
-export type User = {
-  _id: string;
+export type Client = {
   clientId: string;
   name: string;
   email: string;

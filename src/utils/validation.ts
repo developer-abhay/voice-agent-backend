@@ -1,19 +1,16 @@
-import { User } from "../types/types";
+import { Client } from "../types/Types";
 
-export const validateUserInput = (
+export const validateClientInput = (
   type: "signin" | "signup",
-  user: Partial<User>,
+  client: Partial<Client>,
 ) => {
-  if (type == "signup" && !user.name) {
+  if (type == "signup" && !client.name) {
     throw new Error("Missing required fields: Name.");
   }
-  if (type == "signup" && !user.clientId) {
-    throw new Error("Missing required fields: ClientId.");
-  }
-  if (!user.email) {
+  if (!client.email) {
     throw new Error("Missing required fields: Email.");
   }
-  if (!user.password) {
+  if (!client.password) {
     throw new Error("Missing required fields: Password.");
   }
   return true;
