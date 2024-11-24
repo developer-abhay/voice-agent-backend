@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import { authRouter } from "./routes/Auth.router";
+import { appRouter } from "./routes/App.router";
 import { errorHandler } from "./middlewares/ErrorHandler_";
 import dotenv from "dotenv";
 
@@ -21,10 +21,12 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
 
-app.use("/api/v1", authRouter);
+app.use("/api/v1", appRouter);
 app.use(errorHandler);
 
 const port = process.env.PORT || 3000;
+
+console.log(__dirname)
 
 app.listen(port, () => {
   console.log(`listening on port : ${port}`);
