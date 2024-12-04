@@ -1,7 +1,7 @@
 import AWS from "aws-sdk";
 import dotenv from "dotenv";
 import { Client } from "../types/Types_";
-import { Client_Table_Name } from "../config/Constants";
+import { Client_Table_Name, PhoneCallDetails_Table_Name } from "../config/Constants";
 
 dotenv.config();
 
@@ -63,4 +63,25 @@ const createClient = async (client: Client): Promise<void> => {
   }
 };
 
-export { findClientById, findClientByEmail, createClient };
+// Get Call Details
+const fetchCallsByClientId = async (clientId: string) => {
+  const params = {
+    TableName: PhoneCallDetails_Table_Name,
+    KeyConditionExpression: "clientId = :clientId",
+    ExpressionAttributeValues: {
+      ":clientId": clientId,
+    },
+  };
+
+  try {
+    const result = await dynamoClient.query(params).promise();
+    console.log(result)
+    console.log(`Fetched calls for clientId ${clientId}:`, result.Items);
+    return result.Items; // Return the fetched items
+  } catch (err: unknown) {
+    console.error("Error fetching calls:", err);
+    throw new Error("Error fetching calls");
+  }
+};
+
+export { findClientById, findClientByEmail, createClient, fetchCallsByClientId };

@@ -11,7 +11,7 @@ export const verifyCookies = (
     next: NextFunction,
 ) => {
     const token = req.cookies.token;
-
+    console.log('sdjvskjd ')
     if (!token) {
         res.status(401).json({ message: "No token provided" });
         return;

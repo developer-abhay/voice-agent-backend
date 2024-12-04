@@ -3,11 +3,11 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon --watch src --exec ts-node src/index.ts",
     "build": "tsc -b",
     "start": "node dist/index.js",
-    "deploy": "npm install && tsc -b",
     "lint:check": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format:check": "prettier --check .",
     "format:fix": "prettier --write ."
   },
   "keywords": [],
@@ -37,6 +37,7 @@
     "eslint": "^9.13.0",
     "globals": "^15.11.0",
     "prettier": "^3.3.3",
+    "typescript": "^5.7.2",
     "typescript-eslint": "^8.12.2"
   }
 }
