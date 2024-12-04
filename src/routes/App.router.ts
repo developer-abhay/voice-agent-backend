@@ -12,7 +12,7 @@ import { getCallDetails } from '../controllers/Calls';
 export const appRouter = express.Router();
 
 appRouter.get("/", (req, res) => {
-  res.send('Hello User')
+  res.send('HelloUser')
 });
 
 appRouter.post("/signup", signup);
