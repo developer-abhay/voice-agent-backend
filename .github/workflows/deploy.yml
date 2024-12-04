@@ -37,5 +37,5 @@ jobs:
             sudo docker pull developerabhay/echobot-backend:latest
             sudo docker stop echobot-backend || true
             sudo docker rm echobot-backend || true
-            sudo docker run -d --restart always --name echobot-backend --env-file .env -p 8080:8080 developerabhay/echobot-backend:latest
+            sudo docker run -d --restart always --name echobot-backend --env-file .env -p 3000:3000 developerabhay/echobot-backend:latest
             sudo docker image prune -f
